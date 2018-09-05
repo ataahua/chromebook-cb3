@@ -1,0 +1,5 @@
+---
+all:
+  hosts:
+    cb3:
+      ansible_connection: local

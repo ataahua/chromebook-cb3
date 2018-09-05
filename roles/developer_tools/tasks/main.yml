@@ -1,0 +1,15 @@
+---
+
+- name: Optionally install Atom
+  include: atom.yml
+  when: install_atom
+  tags:
+    - atom
+
+- name: Install zeal documentation viewer
+  apt:
+    name: zeal
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_valid_time }}"
+  when: install_zeal
+  become: yes

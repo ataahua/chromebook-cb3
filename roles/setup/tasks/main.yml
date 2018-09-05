@@ -1,0 +1,69 @@
+---
+
+- name: Ensure all packages are up to-date
+  apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_valid_time }}"
+  become: yes
+
+- name: Install standard GNU/Linux utilities
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_valid_time }}"
+  with_items: "{{ extra_gnu_linux_packages }}"
+  become: yes
+
+- name: Optionally install powerline-shell
+  include: powerline_shell.yml
+  when: install_powerline_shell
+  tags:
+    - powerline-shell
+
+- name: Template .bash_profile to  ~/.bash_profile
+  template:
+    src: home/user/.bash_profile.j2
+    dest: "{{ ansible_env.HOME }}/.bash_profile"
+
+- name: Ensure ~/.local/share/applications/ directory
+  file:
+    dest: "{{ ansible_env.HOME }}/.local/share/applications"
+    state: directory
+
+- name: template ".gitignore_global" to home directory
+  template:
+    src: home/user/.gitignore_global.j2
+    dest: "{{ ansible_env.HOME }}/.gitignore_global"
+
+- name: Set up user.name global git config entry
+  git_config:
+    name: user.name
+    scope: global
+    value: "{{ git_user_name }}"
+
+- name: Set up user.email global git config entry
+  git_config:
+    name: user.email
+    scope: global
+    value: "{{ git_user_email }}"
+
+- name: Set up core.excludesfile global git config entry
+  git_config:
+    name: core.excludesfile
+    scope: global
+    value: "{{ ansible_env.HOME }}/.gitignore_global"
+
+- name: Download rclone deb package
+  get_url:
+    url: https://downloads.rclone.org/rclone-current-linux-amd64.deb
+    dest: /var/cache/apt/archives/rclone.deb
+  when: install_rclone
+  become: yes
+
+- name: Install rclone deb package
+  apt:
+    deb: /var/cache/apt/archives/rclone.deb
+    state: present
+  when: install_rclone
+  become: yes

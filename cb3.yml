@@ -1,0 +1,13 @@
+---
+
+- hosts: cb3
+  pre_tasks:
+    - name: Load user-provided configuration_variables
+      include_vars: "config-options.yaml"
+      no_log: true
+      check_mode: no
+      tags:
+        - always
+  roles:
+    - { name: setup, tags: role_setup }
+    - { name: developer_tools, tags: role_developer_tools }
